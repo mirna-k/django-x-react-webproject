@@ -1,88 +1,78 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import api from "../api";
-import Note from "../components/Note";
+import BaseLayout from "../components/BaseLayout";
 import "../styles/Home.css"
+import QuizCard from "../components/QuizCard";
+import { Button, ConfigProvider, Space } from 'antd';
+import { PlusCircleOutlined } from '@ant-design/icons';
+import { css } from '@emotion/css';
+import { Link } from "react-router-dom";
 
 function Home() {
-    const [notes, setNotes] = useState([]);
-    const [content, setContent] = useState("");
-    const [title, setTitle] = useState("");
+    const [my_quizes, setMyQuizes] = useState([]);
 
     useEffect(() => {
-        getNotes();
+        getMyQuizes();
     }, []);
 
-    const getNotes = () => {
-        api.get("/api/notes/")
+    const getMyQuizes = () => {
+        api.get("/api/my-quizes/")
             .then((res) => res.data)
             .then((data) => {
-                setNotes(data);
+                setMyQuizes(data);
                 console.log(data);
             })
             .catch((err) => alert(err));
     };
 
-    const deleteNote = (id) => {
-        api.delete(`/api/notes/delete/${id}`)
-            .then((res) => {
-                if (res.status === 204) alert("Note deleted.");
-                else alert("Failed to delete note.");
-                getNotes();
-            })
-            .catch((error) => alert(error));
-    };
+    const { getPrefixCls } = useContext(ConfigProvider.ConfigContext);
+    const rootPrefixCls = getPrefixCls();
+    const linearGradientButton = css`
+        &.${rootPrefixCls}-btn-primary:not([disabled]):not(.${rootPrefixCls}-btn-dangerous) {
+            border-width: 0;
 
-    const createNote = (e) => {
-        e.preventDefault();
-        api.post("/api/notes/", { content, title })
-            .then((res) => {
-                if (res.status === 201) alert("Note created.");
-                else alert("Failed to create note.");
-                getNotes();
-            })
-            .catch((err) => alert(err));
-    };
+            > span {
+                position: relative;
+            }
+
+            &::before {
+                content: '';
+                background: linear-gradient(135deg, #6253e1, #04befe);
+                position: absolute;
+                inset: 0;
+                opacity: 1;
+                transition: all 0.3s;
+                border-radius: inherit;
+            }
+
+            &:hover::before {
+                opacity: 0;
+            }
+        }`;
 
     return (
-        <div>
+        <BaseLayout>
             <div>
-                <h2>Notes</h2>
+            <ConfigProvider button={{className: linearGradientButton,}}>
+                <Space>
+                    <Link to="/create-quiz">
+                    <Button type="primary" size="large" icon={<PlusCircleOutlined />}>
+                        Create Quiz
+                    </Button>
+                    </Link>
+                </Space>
+            </ConfigProvider>
+                <h2>Home</h2>
                 <ul>
-                    {notes.map((note) => (
-                        <Note 
-                            note={note} 
-                            onDelete={deleteNote} 
-                            key={note.id} 
+                    {my_quizes.map((quiz) => (
+                        <QuizCard 
+                            quiz={quiz} 
+                            key={quiz.id} 
                         />
                     ))}
                 </ul>
             </div>
-            <h2>Create Notes</h2>
-            <form onSubmit={createNote}>
-                <label htmlFor="title">Title:</label>
-                <br />
-                <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    required
-                    onChange={(e) => setTitle(e.target.value)}
-                    value={title}
-                />
-                <br />
-                <label htmlFor="content">Content:</label>
-                <br />
-                <textarea
-                    id="content"
-                    name="content"
-                    required
-                    value={content}
-                    onChange={(e) => setContent(e.target.value)}
-                ></textarea>
-                <br />
-                <input type="submit" value="Submit" />
-            </form>
-        </div>
+        </BaseLayout>
     );
 }
 

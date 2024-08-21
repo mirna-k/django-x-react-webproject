@@ -1,0 +1,47 @@
+header {
+    background-color: #333;
+    color: white;
+    padding: 10px;
+}
+
+.custom-link {
+    color: #1677FF;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.custom-link:hover {
+    text-decoration: underline;
+}
+
+
+nav ul {
+    list-style-type: none;
+}
+
+nav ul li {
+    display: inline;
+    margin-right: 10px;
+}
+
+aside {
+    width: 200px;
+    float: left;
+    margin-right: 20px;
+}
+
+main {
+    margin-left: 220px;
+    padding: 20px;
+}
+
+footer {
+    clear: both;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
