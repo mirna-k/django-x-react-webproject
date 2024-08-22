@@ -4,12 +4,9 @@ from rest_framework import generics
 from .serializers import UserSerializer, NoteSerializer, QuizSerializer, FlashcardSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .models import Note, Quiz, Flashcard
-from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound
-
 
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -64,9 +61,6 @@ class QuizCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def create(self, request, *args, **kwargs):
-        response = super().create(request, *args, **kwargs)
-
 
 class FlashcardCreateView(generics.CreateAPIView):
     queryset = Flashcard.objects.all()
@@ -74,11 +68,29 @@ class FlashcardCreateView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
 
-
 class QuizDetailView(generics.RetrieveAPIView):
     queryset = Quiz.objects.all()
     serializer_class = QuizSerializer
     permission_classes = [AllowAny]
+
+
+class FlashcardListView(generics.ListAPIView):
+    serializer_class = FlashcardSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        quiz_id = self.kwargs.get('id')
+        try:
+            Quiz.objects.get(id=quiz_id)
+        except Quiz.DoesNotExist:
+            raise NotFound("Quiz not found.")
+
+        return Flashcard.objects.filter(quiz_id=quiz_id)
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class QuizStatusChoicesView(APIView):

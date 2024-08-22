@@ -2,13 +2,11 @@ import { useState, useEffect } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import BaseLayout from "../components/BaseLayout";
-import QuizCard from "../components/QuizCard";
 import axios from 'axios';
 import { Space } from "antd";
 
 function CreateQuiz() {
     const [title, setTitle] = useState("");
-    const [my_quizes, setMyQuizes] = useState([]);
     const [description, setDescription] = useState("");
     const [field, setField] = useState("art");
     const [status, setStatus] = useState("public");
@@ -32,7 +30,6 @@ function CreateQuiz() {
 
     
     useEffect(() => {
-        getMyQuizes();
         getQuizStatusChoices();
     }, []);
 
@@ -55,16 +52,6 @@ function CreateQuiz() {
             navigate(`/create-flashcards/${quizId}`);
         })
         .catch((err) => alert(err));
-    };
-
-    const getMyQuizes = () => {
-        api.get("/api/my-quizes/")
-            .then((res) => res.data)
-            .then((data) => {
-                setMyQuizes(data);
-                console.log(data);
-            })
-            .catch((err) => alert(err));
     };
 
     const getQuizStatusChoices = () => {
@@ -139,18 +126,6 @@ function CreateQuiz() {
                 <br />
                 <input type="submit" value="Submit" />
             </form>
-
-            <div>
-                <h2>My Quizes</h2>
-                <ul>
-                    {my_quizes.map((quiz) => (
-                        <QuizCard 
-                            quiz={quiz} 
-                            key={quiz.id} 
-                        />
-                    ))}
-                </ul>
-            </div>
         </BaseLayout>
     );
 }

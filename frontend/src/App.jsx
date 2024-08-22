@@ -5,7 +5,7 @@ import Register from './pages/Register';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import ProtectedRoute from "./components/ProtectedRoute";
-import QuizDetail from './components/QuizDetail';
+import QuizDetail from './pages/QuizDetail';
 import CreateQuiz from './pages/CreateQuiz';
 import CreateFlashcards from './pages/CreateFlashcards';
 

@@ -12,12 +12,7 @@ function QuizCard({quiz}) {
         
         <Card
             style={{ width: 300 }}
-            cover={
-                <img
-                    alt="example"
-                    src="https://gw.alipayobjects.com/zos/rmsportal/JiqGstEfoWAOHiTxclqi.png"
-                />
-            }
+            
             actions={[
                 <SettingOutlined key="setting" />,
                 <Link to={`/create-flashcards/${quiz.id}/`}><EditOutlined key="edit" /></Link>,

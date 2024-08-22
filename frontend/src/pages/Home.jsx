@@ -63,7 +63,7 @@ function Home() {
                 </Space>
             </ConfigProvider>
                 <h2>Home</h2>
-                <ul>
+                <ul className="quiz-list">
                     {my_quizes.map((quiz) => (
                         <QuizCard 
                             quiz={quiz} 
