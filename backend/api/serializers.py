@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Note, Quiz, Flashcard
+from .models import Quiz, Flashcard, QuizResult
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,13 +11,6 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
-
-    
-class NoteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Note
-        fields = ["id", "title", "content", "created_at", "author"]
-        extra_kwargs = {"author": {"read_only": True}}
 
 
 class FlashcardSerializer(serializers.ModelSerializer):
@@ -35,3 +28,11 @@ class QuizSerializer(serializers.ModelSerializer):
         extra_kwargs = {"author": {"read_only": True}}
 
     
+class QuizResultSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuizResult
+        fields = ['id', 'user', 'quiz', 'score', 'completed_at']
+        extra_kwargs = {
+            'user': {'read_only': True},
+            'completed_at': {'read_only': True}
+        }

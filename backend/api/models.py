@@ -1,14 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-
-class Note(models.Model):
-    title = models.CharField(max_length=100)
-    content = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notes")
-
-    def __str__(self) -> str:
-        return self.title
     
 class Quiz(models.Model):
     class Status(models.TextChoices):
@@ -29,6 +20,7 @@ class Quiz(models.Model):
     def __str__(self):
         return self.title
 
+
 class Flashcard(models.Model):
     quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
     term = models.CharField(max_length=200)
@@ -36,3 +28,13 @@ class Flashcard(models.Model):
 
     def __str__(self):
         return self.term
+    
+
+class QuizResult(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    score = models.FloatField()
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.quiz.title} - {self.score}"

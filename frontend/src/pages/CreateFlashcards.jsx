@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import BaseLayout from '../components/BaseLayout';
+
 
 function CreateFlashcards() {
     const { quizId } = useParams();
     const [flashcards, setFlashcards] = useState([{ quiz: quizId, term: '', description: '' }]);
+
+    const navigate = useNavigate();
 
     const handleFlashcardChange = (index, e) => {
         const newFlashcards = flashcards.map((flashcard, fIndex) => {
@@ -25,6 +28,7 @@ function CreateFlashcards() {
             api.post(`/api/create-flashcards/${quizId}/`, flashcard)
             .then((res) => {
                 console.log('Flashcards created successfully:', res.data);
+                navigate(`/quiz/${quizId}/`);
             })
             .catch((err) => alert(err));
         });        

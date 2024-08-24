@@ -11,10 +11,11 @@ import { Link } from 'react-router-dom';
 
 const { Header, Content, Sider, Footer } = Layout;
 
-const items1 = ['1', '2', '3'].map((key) => ({
-  key,
-  label: `nav ${key}`,
-}));
+const headerItems = [
+    getItem(<Link to="/register/">Register</Link>),
+    getItem(<Link to="/login">Login</Link>),
+    getItem(<Link to="/logout">Logout</Link>),
+    'user']
 
 function getItem(label, key, icon, children) {
   return {
@@ -27,7 +28,7 @@ function getItem(label, key, icon, children) {
 
 const items = [
     getItem(<Link to="/">Home</Link>, '1', <HomeOutlined />),
-    getItem(<Link to="/">My Quizes</Link>, '2', <DesktopOutlined />),
+    getItem(<Link to="/">My Quizzes</Link>, '2', <DesktopOutlined />),
     getItem('User', 'sub1', <UserOutlined />, [
       getItem('Tom', '3'),
       getItem('Bill', '4'),
@@ -56,7 +57,7 @@ const BaseLayout = ({children}) => {
                 theme="dark"
                 mode="horizontal"
                 defaultSelectedKeys={['2']}
-                items={items1}
+                items={headerItems}
                 style={{
                     flex: 1,
                     minWidth: 0,

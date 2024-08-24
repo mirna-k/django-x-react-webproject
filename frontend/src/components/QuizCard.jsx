@@ -26,6 +26,7 @@ function QuizCard({quiz}) {
                 title={quiz.title}
                 description={quiz.description}
             />
+            <p>Author:{quiz.author}</p>
             <p>Quiz created at: {formattedDate}</p>
             <p>Field: {quiz.field}</p>
             <p>Status: {quiz.status}</p>

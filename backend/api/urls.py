@@ -5,7 +5,11 @@ urlpatterns = [
     path("my-quizes/", views.MyQuizListCreate.as_view(), name="my-quiz-list"),
     path('create-quiz/', views.QuizCreateView.as_view(), name='create-quiz'),
     path("quiz/<int:pk>/", views.QuizDetailView.as_view(), name="quiz-detail"),
+    path('quiz/<int:pk>/delete/', views.QuizDeleteView.as_view(), name='delete-quiz'),
     path("create-flashcards/<int:quizId>/", views.FlashcardCreateView.as_view(), name="create-flashcards"),
+    path('flashcard/<int:id>/delete/', views.FlashcardDeleteView.as_view(), name='delete-flashcard'),
     path('quiz/<int:id>/flashcards/', views.FlashcardListView.as_view(), name="quiz-flashcards"),
     path('quiz-status-choices/', views.QuizStatusChoicesView.as_view(), name='quiz-status-choices'),
+    path("quiz-results/", views.QuizResultCreateView.as_view(), name="quiz-results"),
+    path('quiz/<int:quiz_id>/results/', views.QuizResultsListView.as_view(), name='quiz-results-list'),
 ]

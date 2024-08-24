@@ -1,42 +1,18 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from rest_framework import generics
-from .serializers import UserSerializer, NoteSerializer, QuizSerializer, FlashcardSerializer
+from rest_framework import generics, status
+from .serializers import UserSerializer, QuizSerializer, FlashcardSerializer, QuizResultSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .models import Note, Quiz, Flashcard
+from .models import Quiz, Flashcard, QuizResult
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.exceptions import NotFound
+from rest_framework.exceptions import NotFound, PermissionDenied
 
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
 
-
-class NoteListCreate(generics.ListCreateAPIView):
-    serializer_class = NoteSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return Note.objects.filter(author=user)
-    
-    def perform_create(self, serializer):
-        if serializer.is_valid():
-            serializer.save(author=self.request.user)
-        else:
-            print(serializer.errors)
-
-
-class NoteDelete(generics.DestroyAPIView):
-    serializer_class = NoteSerializer
-    permission_classes = [IsAuthenticated]
-
-    def get_queryset(self):
-        user = self.request.user
-        return Note.objects.filter(author=user)
-    
 
 class MyQuizListCreate(generics.ListCreateAPIView):
     serializer_class = QuizSerializer
@@ -62,16 +38,38 @@ class QuizCreateView(generics.CreateAPIView):
         serializer.save(author=self.request.user)
 
 
+class QuizDetailView(generics.RetrieveAPIView):
+    queryset = Quiz.objects.all()
+    serializer_class = QuizSerializer
+    permission_classes = [AllowAny]
+
+
+class QuizDeleteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, pk, format=None):
+        try:
+            quiz = Quiz.objects.get(pk=pk)
+            quiz.delete()
+            return Response({'message': 'Quiz deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        except Quiz.DoesNotExist:
+            return Response({'error': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
 class FlashcardCreateView(generics.CreateAPIView):
     queryset = Flashcard.objects.all()
     serializer_class = FlashcardSerializer
     permission_classes = [AllowAny]
 
 
-class QuizDetailView(generics.RetrieveAPIView):
-    queryset = Quiz.objects.all()
-    serializer_class = QuizSerializer
+class FlashcardDeleteView(generics.DestroyAPIView):
+    queryset = Flashcard.objects.all()
     permission_classes = [AllowAny]
+    
+    def perform_destroy(self, instance):
+        if instance.quiz.author != self.request.user:
+            raise PermissionDenied("You do not have permission to delete this flashcard.")
+        super().perform_destroy(instance)
 
 
 class FlashcardListView(generics.ListAPIView):
@@ -99,3 +97,19 @@ class QuizStatusChoicesView(APIView):
         status_choices = Quiz.Status.choices
         return Response(status_choices)
     
+
+class QuizResultCreateView(generics.CreateAPIView):
+    queryset = QuizResult.objects.all()
+    serializer_class = QuizResultSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class QuizResultsListView(generics.ListAPIView):
+    serializer_class = QuizResultSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        quiz_id = self.kwargs['quiz_id']
+        return QuizResult.objects.filter(quiz_id=quiz_id).order_by('score')
