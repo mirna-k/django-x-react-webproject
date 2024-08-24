@@ -21,10 +21,11 @@ class FlashcardSerializer(serializers.ModelSerializer):
 
 class QuizSerializer(serializers.ModelSerializer):
     flashcards = FlashcardSerializer(many=True, read_only=True)
+    author_username = serializers.CharField(source='author.username', read_only=True)
 
     class Meta:
         model = Quiz
-        fields = ["id", "title", "description", "created_at", "author", "field", "status", "flashcards"]
+        fields = ["id", "title", "description", "created_at", "author_username", "field", "status", "flashcards"]
         extra_kwargs = {"author": {"read_only": True}}
 
     

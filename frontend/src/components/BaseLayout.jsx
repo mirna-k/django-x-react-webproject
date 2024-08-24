@@ -1,21 +1,34 @@
-import React, { useState } from 'react';
-import {
-      DesktopOutlined,
-      FileOutlined,
-      TeamOutlined,
-      UserOutlined,
-      HomeOutlined
-    } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { Layout, Menu, theme } from 'antd';
-import { Link } from 'react-router-dom';
+import { DesktopOutlined, FileOutlined, TeamOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
+import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
+import axios from 'axios';
 
-const { Header, Content, Sider, Footer } = Layout;
+const useUser = () => {
+  const [user, setUser] = useState(null);
 
-const headerItems = [
-    getItem(<Link to="/register/">Register</Link>),
-    getItem(<Link to="/login">Login</Link>),
-    getItem(<Link to="/logout">Logout</Link>),
-    'user']
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get('/api/user/', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem(ACCESS_TOKEN)}`,
+          },
+        });
+        setUser(response.data);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  return user;
+};
+
+const { Header, Content, Sider } = Layout;
 
 function getItem(label, key, icon, children) {
   return {
@@ -28,7 +41,7 @@ function getItem(label, key, icon, children) {
 
 const items = [
     getItem(<Link to="/">Home</Link>, '1', <HomeOutlined />),
-    getItem(<Link to="/">My Quizzes</Link>, '2', <DesktopOutlined />),
+    getItem(<Link to="/my-quizzes">My Quizzes</Link>, '2', <DesktopOutlined />),
     getItem('User', 'sub1', <UserOutlined />, [
       getItem('Tom', '3'),
       getItem('Bill', '4'),
@@ -43,15 +56,22 @@ const BaseLayout = ({children}) => {
     const {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
+  
+  const user = useUser();
 
-    return (
+  const headerItems = [
+    user ? getItem(<span>{user.username}</span>, 'user') : getItem(<Link to="/login">Login</Link>),
+    !user && getItem(<Link to="/register/">Register</Link>),
+    user && getItem(<Link to="/logout">Logout</Link>),
+  ];
+
+  return (
     <Layout>
         <Header
             style={{
                 display: 'flex',
                 alignItems: 'center',
-            }}
-        >
+            }}>
             <div className="demo-logo" />
             <Menu
                 theme="dark"
@@ -89,7 +109,7 @@ const BaseLayout = ({children}) => {
             </Layout>
         </Layout>
     </Layout>
-    );
+  );
 };
 
 export default BaseLayout;

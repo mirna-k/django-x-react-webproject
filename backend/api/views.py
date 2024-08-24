@@ -14,6 +14,17 @@ class CreateUserView(generics.CreateAPIView):
     permission_classes = [AllowAny]
 
 
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        user_data = {
+            'username': user.username,
+        }
+        return Response(user_data)
+
+
 class MyQuizListCreate(generics.ListCreateAPIView):
     serializer_class = QuizSerializer
     permission_classes = [IsAuthenticated]
@@ -27,6 +38,13 @@ class MyQuizListCreate(generics.ListCreateAPIView):
             serializer.save(author=self.request.user)
         else:
             print(serializer.errors)
+
+class PublicQuizListCreate(generics.ListCreateAPIView):
+    serializer_class = QuizSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return Quiz.objects.filter(status='public')
 
 
 class QuizCreateView(generics.CreateAPIView):

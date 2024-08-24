@@ -9,6 +9,7 @@ import QuizDetail from './pages/QuizDetail';
 import CreateQuiz from './pages/CreateQuiz';
 import CreateFlashcards from './pages/CreateFlashcards';
 import TakeQuiz from './pages/TakeQuiz';
+import MyQuizzes from './pages/MyQuizzes';
 
 function Logout() {
   localStorage.clear();
@@ -24,17 +25,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route 
-          path="/"
-          element={
-            <ProtectedRoute>
-              <Home />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/" element={<ProtectedRoute> <Home /> </ProtectedRoute>}/>
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/my-quizzes" element={<ProtectedRoute> <MyQuizzes /> </ProtectedRoute>} />
         <Route path="/create-quiz" element={<ProtectedRoute> <CreateQuiz /> </ProtectedRoute>} />
         <Route path="/quiz/:id" element={<ProtectedRoute> <QuizDetail /> </ProtectedRoute>} />
         <Route path="/create-flashcards/:quizId" element={<ProtectedRoute> <CreateFlashcards /> </ProtectedRoute>} />

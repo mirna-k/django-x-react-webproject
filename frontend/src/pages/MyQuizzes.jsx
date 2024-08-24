@@ -8,18 +8,18 @@ import { PlusCircleOutlined } from '@ant-design/icons';
 import { css } from '@emotion/css';
 import { Link } from "react-router-dom";
 
-function Home() {
-    const [public_quizes, setPublicQuizes] = useState([]);
+function MyQuizzes() {
+    const [my_quizes, setMyQuizes] = useState([]);
 
     useEffect(() => {
-        getPublicQuizes();
+        getMyQuizes();
     }, []);
 
-    const getPublicQuizes = () => {
-        api.get("/api/public-quizzes/")
+    const getMyQuizes = () => {
+        api.get("/api/my-quizzes/")
             .then((res) => res.data)
             .then((data) => {
-                setPublicQuizes(data);
+                setMyQuizes(data);
                 console.log(data);
             })
             .catch((err) => alert(err));
@@ -62,9 +62,9 @@ function Home() {
                     </Link>
                 </Space>
             </ConfigProvider>
-                <h2>Home</h2>
+                <h2>My Quizzes</h2>
                 <ul className="quiz-list">
-                    {public_quizes.map((quiz) => (
+                    {my_quizes.map((quiz) => (
                         <QuizCard 
                             quiz={quiz} 
                             key={quiz.id} 
@@ -76,4 +76,4 @@ function Home() {
     );
 }
 
-export default Home;
+export default MyQuizzes;
