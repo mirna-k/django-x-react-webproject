@@ -2,11 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api';
 import BaseLayout from '../components/BaseLayout';
-
+import { Space, Select, Input, Button} from "antd";
 
 function CreateFlashcards() {
     const { quizId } = useParams();
     const [flashcards, setFlashcards] = useState([{ quiz: quizId, term: '', description: '' }]);
+    const [quiz, setQuiz] = useState(null);
+
+    useEffect(() => {
+        api.get(`/api/quiz/${quizId}/`)
+            .then(response => {
+                setQuiz(response.data);
+            })
+            .catch(error => {
+                console.error('Error fetching quiz details:', error);
+            });
+    }, [quizId]);
 
     const navigate = useNavigate();
 
@@ -34,31 +45,28 @@ function CreateFlashcards() {
         });        
     };
 
+    const { TextArea } = Input;
+
     return (
         <BaseLayout>
             <div>
-                <h1>Create Flashcards for Quiz {quizId}</h1>
+                {quiz ? <h1>{quiz.title}</h1> : <p>Loading quiz details...</p>}
+                <h2>Create Flashcards</h2>
                 <form onSubmit={handleSubmit}>
                     {flashcards.map((flashcard, index) => (
                         <div key={index}>
                             <label>Term</label>
-                            <input
-                                type="text"
-                                name="term"
-                                value={flashcard.term}
-                                onChange={(e) => handleFlashcardChange(index, e)}
-                                required
-                            />
+                            <Input name="term" value={flashcard.term} onChange={(e) => handleFlashcardChange(index, e)} /> 
                             <label>Description</label>
-                            <textarea
-                                name="description"
-                                value={flashcard.description}
-                                onChange={(e) => handleFlashcardChange(index, e)}
-                                required
-                            ></textarea>
+                            <TextArea name="description" value={flashcard.description} showCount maxLength={200} onChange={(e) => handleFlashcardChange(index, e) }
+                                style={{
+                                    height: 120,
+                                    resize: 'none',
+                                }}
+                            />
                         </div>
                     ))}
-                    <button type="button" onClick={addFlashcard}>Add Flashcard</button>
+                    <Button type="primary" onClick={addFlashcard} size="small">Add Flashcard</Button>
                     <input type="submit" value="Create Flashcards" />
                 </form>
             </div>

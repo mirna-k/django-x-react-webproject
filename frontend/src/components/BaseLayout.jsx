@@ -4,6 +4,7 @@ import { Layout, Menu, theme } from 'antd';
 import { DesktopOutlined, FileOutlined, TeamOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
 import axios from 'axios';
+import '../styles/BaseLayout.css';
 
 const useUser = () => {
   const [user, setUser] = useState(null);
@@ -66,7 +67,7 @@ const BaseLayout = ({children}) => {
   ];
 
   return (
-    <Layout>
+    <Layout style={{ height: 100}}>
         <Header
             style={{
                 display: 'flex',

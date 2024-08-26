@@ -7,6 +7,7 @@ import { Button, ConfigProvider, Space } from 'antd';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { css } from '@emotion/css';
 import { Link } from "react-router-dom";
+import { capitalize } from "../constants";
 
 function Home() {
     const [public_quizes, setPublicQuizes] = useState([]);
@@ -24,6 +25,15 @@ function Home() {
             })
             .catch((err) => alert(err));
     };
+
+    const quizzesByField = public_quizes.reduce((acc, quiz) => {
+        const { field } = quiz;
+        if (!acc[field]) {
+            acc[field] = [];
+        }
+        acc[field].push(quiz);
+        return acc;
+    }, {});
 
     const { getPrefixCls } = useContext(ConfigProvider.ConfigContext);
     const rootPrefixCls = getPrefixCls();
@@ -62,15 +72,22 @@ function Home() {
                     </Link>
                 </Space>
             </ConfigProvider>
-                <h2>Home</h2>
-                <ul className="quiz-list">
-                    {public_quizes.map((quiz) => (
-                        <QuizCard 
-                            quiz={quiz} 
-                            key={quiz.id} 
-                        />
-                    ))}
-                </ul>
+                <h2>Browse Quizzes</h2>
+                <div>
+            {Object.entries(quizzesByField).map(([field, quizzes]) => (
+                <div key={field}>
+                    <h3>{capitalize(field)}</h3>
+                    <Space size={[4, 4]} wrap>
+                        {quizzes.map((quiz) => (
+                            <QuizCard 
+                                quiz={quiz} 
+                                key={quiz.id} 
+                            />
+                        ))}
+                    </Space>
+                </div>
+            ))}
+        </div>
             </div>
         </BaseLayout>
     );

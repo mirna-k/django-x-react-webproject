@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate  } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from 'antd';
-
-axios.defaults.xsrfCookieName = 'csrftoken';
-axios.defaults.xsrfHeaderName = 'X-CSRFToken';
+import { Button, Input } from 'antd';
+import BaseLayout from '../components/BaseLayout';
+import { getAccessToken, refreshToken } from '../services/AuthService';
 
 function TakeQuiz() {
     const { quizId } = useParams();
@@ -16,25 +15,16 @@ function TakeQuiz() {
 
     const navigate = useNavigate();
 
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
     useEffect(() => {
-        axios.get(`/api/quiz/${quizId}/flashcards/`)
-            .then(response => setFlashcards(response.data))
-            .catch(error => console.error('Error fetching flashcards:', error));
+        const fetchData = async () => {
+            try {
+                const flashcardsResponse = await axios.get(`/api/quiz/${quizId}/flashcards/`);
+                setFlashcards(flashcardsResponse.data);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        fetchData();
     }, [quizId]);
 
     const handleSubmitAnswer = () => {
@@ -50,50 +40,70 @@ function TakeQuiz() {
         }
     };
 
-    const handleSaveResults = () => {
-        const csrftoken = getCookie('csrftoken');
-
+    const handleSaveResults = async () => {
+        const accessToken = getAccessToken();
         const scorePercent = (score / flashcards.length) * 100;
         const roundedScorePercent = parseFloat(scorePercent.toFixed(2));
-
-        axios.post(
-            `/api/quiz-results/`, 
-            { quiz: quizId, score: roundedScorePercent }, 
-            { headers: { 'X-CSRFToken': csrftoken } }
-        )
-            .then(response => {
-                console.log('Results saved:', response.data);
-                navigate(`/quiz/${quizId}/`);
-            })
-            .catch(error => console.error('Error saving results:', error));
+        try {
+            await axios.post(`/api/quiz-results/`, { quiz: quizId, score: roundedScorePercent }, {
+                headers: { Authorization: `Bearer ${accessToken}` }
+            });
+            console.log('Results submitted successfully');
+            navigate(`/quiz/${quizId}/`);
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                const newToken = await refreshToken();
+                if (newToken) {
+                    try {
+                        await axios.post(`/api/quiz/${quizId}/submit/`, values, {
+                            headers: { Authorization: `Bearer ${newToken}` }
+                        });
+                        console.log('Quiz submitted successfully after token refresh');
+                        navigate(`/quiz/${quizId}/`);
+                    } catch (retryError) {
+                        console.error('Error submitting quiz after token refresh:', retryError);
+                    }
+                } else {
+                    console.error('Unable to refresh token');
+                }
+            } else {
+                console.error('Error submitting quiz:', error);
+            }
+        }
     };
 
     const [size, setSize] = useState('large');
     if (quizCompleted) {
         return (
+            <BaseLayout>
             <div>
                 <h2>Quiz Completed!</h2>
                 <p>Your score: {score} / {flashcards.length}</p>
                 <Button type="primary" size={size} onClick={handleSaveResults}>
                     Save Results
                 </Button>
-                <button onClick={handleSaveResults}>Save Results</button>
+                <Button type="primary" danger size={size} onClick={() => navigate(`/quiz/${quizId}/`)}>
+                    Discard Results
+                </Button>
             </div>
+            </BaseLayout>
         );
     }
 
     return (
+        <BaseLayout>
         <div>
             <h2>{flashcards[currentIndex]?.description}</h2>
-            <input
-                type="text"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-            />
+            <Input 
+                value={userAnswer} 
+                onChange={(e) => setUserAnswer(e.target.value)} 
+                style={{width: 300}}
+            /> 
             <Button type="primary" onClick={handleSubmitAnswer}>
-                    Submit
+                Submit
             </Button>
         </div>
+        </BaseLayout>
     );
 }
 

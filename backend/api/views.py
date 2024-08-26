@@ -2,11 +2,19 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics, status
 from .serializers import UserSerializer, QuizSerializer, FlashcardSerializer, QuizResultSerializer
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
 from .models import Quiz, Flashcard, QuizResult
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound, PermissionDenied
+
+class IsAuthor(BasePermission):
+    """
+    Custom permission to only allow the author of a quiz to modify or delete it.
+    """
+    def has_object_permission(self, request, view, obj):
+        return obj.author == request.user
+
 
 class CreateUserView(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -39,6 +47,7 @@ class MyQuizListCreate(generics.ListCreateAPIView):
         else:
             print(serializer.errors)
 
+
 class PublicQuizListCreate(generics.ListCreateAPIView):
     serializer_class = QuizSerializer
     permission_classes = [AllowAny]
@@ -63,13 +72,17 @@ class QuizDetailView(generics.RetrieveAPIView):
 
 
 class QuizDeleteView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAuthor]
 
     def delete(self, request, pk, format=None):
         try:
             quiz = Quiz.objects.get(pk=pk)
+            if quiz.author != request.user:
+                return Response({'error': 'You do not have permission to delete this quiz'}, status=status.HTTP_403_FORBIDDEN)
+            
             quiz.delete()
             return Response({'message': 'Quiz deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+        
         except Quiz.DoesNotExist:
             return Response({'error': 'Quiz not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -130,4 +143,4 @@ class QuizResultsListView(generics.ListAPIView):
 
     def get_queryset(self):
         quiz_id = self.kwargs['quiz_id']
-        return QuizResult.objects.filter(quiz_id=quiz_id).order_by('score')
+        return QuizResult.objects.filter(quiz_id=quiz_id).order_by('-score')

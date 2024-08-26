@@ -6,8 +6,8 @@ class Quiz(models.Model):
         PUBLIC = 'public', "Public"
         PRIVATE = 'private', "Private"
 
-    title = models.CharField(max_length=200)
-    description = models.TextField()
+    title = models.CharField(max_length=50)
+    description = models.TextField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="quizes")
     field = models.CharField(max_length=100)

@@ -30,9 +30,10 @@ class QuizSerializer(serializers.ModelSerializer):
 
     
 class QuizResultSerializer(serializers.ModelSerializer):
+    taker_username = serializers.CharField(source='user.username', read_only=True)
     class Meta:
         model = QuizResult
-        fields = ['id', 'user', 'quiz', 'score', 'completed_at']
+        fields = ['id', 'taker_username', 'quiz', 'score', 'completed_at']
         extra_kwargs = {
             'user': {'read_only': True},
             'completed_at': {'read_only': True}

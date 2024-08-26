@@ -3,7 +3,7 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 import BaseLayout from "../components/BaseLayout";
 import axios from 'axios';
-import { Space } from "antd";
+import { Space, Select, Input} from "antd";
 
 function CreateQuiz() {
     const [title, setTitle] = useState("");
@@ -14,19 +14,24 @@ function CreateQuiz() {
     const navigate = useNavigate();
 
     const fieldOptions = [
-        { value: 'art', label: 'Art' },
-        { value: 'business', label: 'Business' },
-        { value: 'computers', label: 'Computers' },
-        { value: 'education', label: 'Education' },
-        { value: 'engineering', label: 'Engineering' },
-        { value: 'finance', label: 'Finance' },
-        { value: 'law', label: 'Law' },
-        { value: 'literature', label: 'Literature' },
-        { value: 'medicine', label: 'Medicine' },
-        { value: 'science', label: 'Science' },
-        { value: 'social_sciences', label: 'Social Sciences' },
-        { value: 'technology', label: 'Technology' },
-    ];    
+        { value: 'Art', label: 'Art' },
+        { value: 'Business', label: 'Business' },
+        { value: 'Computers', label: 'Computers' },
+        { value: 'Education', label: 'Education' },
+        { value: 'Engineering', label: 'Engineering' },
+        { value: 'Finance', label: 'Finance' },
+        { value: 'Law', label: 'Law' },
+        { value: 'Literature', label: 'Literature' },
+        { value: 'Medicine', label: 'Medicine' },
+        { value: 'Science', label: 'Science' },
+        { value: 'Social Sciences', label: 'Social Sciences' },
+        { value: 'Technology', label: 'Technology' },
+    ];
+
+    const statusOptionsList = [
+        { value: 'Public', label: 'Public'  },
+        { value: 'Private', label: 'Private' },
+    ];
 
     
     useEffect(() => {
@@ -63,6 +68,8 @@ function CreateQuiz() {
                 console.error('Error fetching status options:', error);
             });
     };
+
+    const { TextArea } = Input;
     
     return (
         <BaseLayout>
@@ -70,58 +77,41 @@ function CreateQuiz() {
             <form onSubmit={createQuiz}>
                 <label htmlFor="title">Title:</label>
                 <br />
-                <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    required
-                    onChange={(e) => setTitle(e.target.value)}
-                    value={title}
-                />
+                <Input showCount maxLength={50} onChange={(e) => setTitle(e.target.value)} />   
                 <br />
                 <label htmlFor="description">Description:</label>
                 <br />
-                <textarea
-                    id="description"
-                    name="description"
-                    required
-                    onChange={(e) => setDescription(e.target.value)}
-                    value={description}
-                ></textarea>
+                <TextArea showCount maxLength={200} onChange={(e) => setDescription(e.target.value)}
+                    style={{
+                        height: 120,
+                        resize: 'none',
+                    }}
+                />
                 <br />
                 <Space>
                     <label htmlFor="field">Field:</label>
                     <br />
-                    <select
-                        id="field"
-                        name="field"
-                        onChange={(e) => setField(e.target.value)}
-                        value={field}
-                    >
-                        {fieldOptions.map(option => (
-                            <option key={option.value} value={option.value}>
-                                {option.label}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                            defaultValue="Art"
+                            onChange={(e) => setField(e.target.value)}
+                            style={{
+                                width: 200,
+                            }}
+                            options={fieldOptions}
+                    />
                 </Space>
                 <br />
                 <Space>
                     <label htmlFor="status">Status:</label>
                     <br />
-                    <select
-                        id="status"
-                        name="status"
-                        required
-                        onChange={(e) => setStatus(e.target.value)}
-                        value={status}
-                    >
-                        {statusOptions.map(([value, label]) => (
-                            <option key={value} value={value}>
-                                {label}
-                            </option>
-                        ))}
-                    </select>
+                    <Select
+                            defaultValue="Public"
+                            onChange={(value) => setStatus(value)}
+                            style={{
+                                width: 200,
+                            }}
+                            options={statusOptionsList}
+                    />
                 </Space>
                 <br />
                 <input type="submit" value="Submit" />
