@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from rest_framework import generics, status
+from .models import Quiz, Flashcard, QuizResult, QuizLike
 from .serializers import UserSerializer, QuizSerializer, FlashcardSerializer, QuizResultSerializer
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated, AllowAny, BasePermission
-from .models import Quiz, Flashcard, QuizResult
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotFound, PermissionDenied
@@ -54,6 +54,16 @@ class PublicQuizListCreate(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return Quiz.objects.filter(status='public')
+    
+
+class LikedQuizListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = QuizSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        liked_quizzes = QuizLike.objects.filter(user=user).values_list('quiz', flat=True)
+        return Quiz.objects.filter(id__in=liked_quizzes)
 
 
 class QuizCreateView(generics.CreateAPIView):
@@ -144,3 +154,30 @@ class QuizResultsListView(generics.ListAPIView):
     def get_queryset(self):
         quiz_id = self.kwargs['quiz_id']
         return QuizResult.objects.filter(quiz_id=quiz_id).order_by('-score')
+
+
+class QuizLikeStatusView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        user = request.user
+        liked = QuizLike.objects.filter(user=user, quiz_id=pk).exists()
+        total_likes = QuizLike.objects.filter(quiz_id=pk).count()
+        return Response({'liked': liked, 'total_likes': total_likes})
+    
+
+class QuizLikeToggleView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request, pk):
+        user = request.user
+        quiz = Quiz.objects.get(pk=pk)
+
+        quiz_like, created = QuizLike.objects.get_or_create(user=user, quiz=quiz)
+
+        if not created:
+            quiz_like.delete()
+            return Response({'liked': False}, status=status.HTTP_200_OK)
+
+        return Response({'liked': True}, status=status.HTTP_200_OK)
+    

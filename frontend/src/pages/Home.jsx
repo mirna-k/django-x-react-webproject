@@ -1,13 +1,11 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import api from "../api";
-import BaseLayout from "../components/BaseLayout";
-import "../styles/Home.css"
-import QuizCard from "../components/QuizCard";
-import { Button, ConfigProvider, Space } from 'antd';
-import { PlusCircleOutlined } from '@ant-design/icons';
-import { css } from '@emotion/css';
-import { Link } from "react-router-dom";
+import { Space, Divider } from 'antd';
 import { capitalize } from "../constants";
+import GradientButton from "../components/GradientButton";
+import BaseLayout from "../components/BaseLayout";
+import QuizCard from "../components/QuizCard";
+import "../styles/Home.css"
 
 function Home() {
     const [public_quizes, setPublicQuizes] = useState([]);
@@ -35,48 +33,16 @@ function Home() {
         return acc;
     }, {});
 
-    const { getPrefixCls } = useContext(ConfigProvider.ConfigContext);
-    const rootPrefixCls = getPrefixCls();
-    const linearGradientButton = css`
-        &.${rootPrefixCls}-btn-primary:not([disabled]):not(.${rootPrefixCls}-btn-dangerous) {
-            border-width: 0;
-
-            > span {
-                position: relative;
-            }
-
-            &::before {
-                content: '';
-                background: linear-gradient(135deg, #6253e1, #04befe);
-                position: absolute;
-                inset: 0;
-                opacity: 1;
-                transition: all 0.3s;
-                border-radius: inherit;
-            }
-
-            &:hover::before {
-                opacity: 0;
-            }
-        }`;
 
     return (
         <BaseLayout>
             <div>
-            <ConfigProvider button={{className: linearGradientButton,}}>
-                <Space>
-                    <Link to="/create-quiz">
-                    <Button type="primary" size="large" icon={<PlusCircleOutlined />}>
-                        Create Quiz
-                    </Button>
-                    </Link>
-                </Space>
-            </ConfigProvider>
+                <GradientButton />
                 <h2>Browse Quizzes</h2>
-                <div>
+            </div>
             {Object.entries(quizzesByField).map(([field, quizzes]) => (
                 <div key={field}>
-                    <h3>{capitalize(field)}</h3>
+                    <Divider orientation="left" style={{fontSize: '20x', fontWeight: 'bold', color: '#1677FF'}}>{capitalize(field)}</Divider>
                     <Space size={[4, 4]} wrap>
                         {quizzes.map((quiz) => (
                             <QuizCard 
@@ -87,8 +53,6 @@ function Home() {
                     </Space>
                 </div>
             ))}
-        </div>
-            </div>
         </BaseLayout>
     );
 }

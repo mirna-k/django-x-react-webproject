@@ -1,76 +1,102 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import api from "../api";
+import axios from 'axios';
+import GradientButton from "../components/GradientButton";
 import BaseLayout from "../components/BaseLayout";
-import "../styles/Home.css"
 import QuizCard from "../components/QuizCard";
-import { Button, ConfigProvider, Space } from 'antd';
-import { PlusCircleOutlined } from '@ant-design/icons';
-import { css } from '@emotion/css';
-import { Link } from "react-router-dom";
+import { Divider } from 'antd';
+import { getAccessToken, refreshToken } from '../services/AuthService';
+import "../styles/Home.css"
 
 function MyQuizzes() {
-    const [my_quizes, setMyQuizes] = useState([]);
+    const [my_quizzes, setMyQuizzes] = useState([]);
+    const [likedQuizzes, setLikedQuizzes] = useState([]);
 
     useEffect(() => {
-        getMyQuizes();
+        getMyQuizzes();
+        getLikedQuizzes();
+
     }, []);
 
-    const getMyQuizes = () => {
+    const getLikedQuizzes = async () => {
+        let accessToken = getAccessToken();
+        try {
+            console.log("Fetching liked quizzes...");
+            const response = await axios.get('/api/liked-quizzes/', {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+            setLikedQuizzes(response.data);
+            console.log("Liked quizzes data:", response.data);
+        } catch (error) {
+            console.error('Error fetching liked quizzes:', error);
+            if (error.response && error.response.status === 401) {
+                const newToken = await refreshToken();
+                if (newToken) {
+                    try {
+                        const response = await axios.get('/api/liked-quizzes/', {
+                            headers: {
+                                Authorization: `Bearer ${newToken}`,
+                            },
+                        });
+                        setLikedQuizzes(response.data);
+                        console.log("Liked quizzes data after token refresh:", response.data);
+                    } catch (retryError) {
+                        console.error('Error fetching liked quizzes after token refresh:', retryError);
+                    }
+                } else {
+                    console.error('Unable to refresh token');
+                }
+            }
+        }
+    };
+
+    const getMyQuizzes = () => {
         api.get("/api/my-quizzes/")
             .then((res) => res.data)
             .then((data) => {
-                setMyQuizes(data);
+                setMyQuizzes(data);
                 console.log(data);
             })
             .catch((err) => alert(err));
     };
 
-    const { getPrefixCls } = useContext(ConfigProvider.ConfigContext);
-    const rootPrefixCls = getPrefixCls();
-    const linearGradientButton = css`
-        &.${rootPrefixCls}-btn-primary:not([disabled]):not(.${rootPrefixCls}-btn-dangerous) {
-            border-width: 0;
-
-            > span {
-                position: relative;
-            }
-
-            &::before {
-                content: '';
-                background: linear-gradient(135deg, #6253e1, #04befe);
-                position: absolute;
-                inset: 0;
-                opacity: 1;
-                transition: all 0.3s;
-                border-radius: inherit;
-            }
-
-            &:hover::before {
-                opacity: 0;
-            }
-        }`;
 
     return (
         <BaseLayout>
             <div>
-            <ConfigProvider button={{className: linearGradientButton,}}>
-                <Space>
-                    <Link to="/create-quiz">
-                    <Button type="primary" size="large" icon={<PlusCircleOutlined />}>
-                        Create Quiz
-                    </Button>
-                    </Link>
-                </Space>
-            </ConfigProvider>
-                <h2>My Quizzes</h2>
+                <GradientButton />
+            </div>
+            <div>
+                <Divider orientation="left" style={{fontSize: '30px'}}>My Quizzes</Divider>
+                {my_quizzes.length > 0 ? (
                 <ul className="quiz-list">
-                    {my_quizes.map((quiz) => (
+                    {my_quizzes.map((quiz) => (
                         <QuizCard 
                             quiz={quiz} 
                             key={quiz.id} 
                         />
                     ))}
                 </ul>
+                ) : (
+                    <p>You don't have any quizzes yet.</p>
+                )}
+            </div>
+            <div>
+                <Divider orientation="left" style={{fontSize: '30px', marginTop: '70px'}}>Liked Quizzes</Divider>
+                {likedQuizzes.length > 0 ? (
+                <ul className="quiz-list">
+                    {likedQuizzes.map((quiz) => (
+                        <QuizCard 
+                            quiz={quiz} 
+                            key={quiz.id} 
+                        />
+                    ))}
+                </ul>
+                ) : (
+                    <p>You haven't liked any quizzes yet.</p>
+                )}
             </div>
         </BaseLayout>
     );

@@ -73,7 +73,7 @@ const BaseLayout = ({children}) => {
                 display: 'flex',
                 alignItems: 'center',
             }}>
-            <div className="demo-logo" />
+            <div className="demo-logo"><img src="../images/flash-card.png" style={{width: 40, height: 40, marginTop: 30}} alt="Logo"/></div>
             <Menu
                 theme="dark"
                 mode="horizontal"
