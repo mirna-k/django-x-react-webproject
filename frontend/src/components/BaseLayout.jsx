@@ -116,7 +116,6 @@ const BaseLayout = ({children}) => {
 					minHeight: 280,
 					background: colorBgContainer,
 					borderRadius: borderRadiusLG,
-					minHeight: 'calc(100vh - 64px - 70px)',
 					}}
 				>
 					{children}
