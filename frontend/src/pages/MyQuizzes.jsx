@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
 import api from "../api";
 import axios from 'axios';
-import GradientButton from "../components/GradientButton";
 import BaseLayout from "../components/BaseLayout";
 import QuizCard from "../components/QuizCard";
-import { Divider } from 'antd';
+import { Divider, Space, Anchor, Col, Row } from 'antd';
 import { getAccessToken, refreshToken } from '../services/AuthService';
+import useIsMobile from "../services/ResponsiveService";
 import "../styles/Home.css"
 
 function MyQuizzes() {
     const [my_quizzes, setMyQuizzes] = useState([]);
     const [likedQuizzes, setLikedQuizzes] = useState([]);
+    const isMobile = useIsMobile(1000); 
 
     useEffect(() => {
         getMyQuizzes();
@@ -62,42 +63,78 @@ function MyQuizzes() {
             .catch((err) => alert(err));
     };
 
-
     return (
         <BaseLayout>
-            <div>
-                <GradientButton />
-            </div>
-            <div>
-                <Divider orientation="left" style={{fontSize: '30px'}}>My Quizzes</Divider>
-                {my_quizzes.length > 0 ? (
-                <ul className="quiz-list">
-                    {my_quizzes.map((quiz) => (
-                        <QuizCard 
-                            quiz={quiz} 
-                            key={quiz.id} 
-                        />
-                    ))}
-                </ul>
-                ) : (
-                    <p>You don't have any quizzes yet.</p>
-                )}
-            </div>
-            <div>
-                <Divider orientation="left" style={{fontSize: '30px', marginTop: '70px'}}>Liked Quizzes</Divider>
-                {likedQuizzes.length > 0 ? (
-                <ul className="quiz-list">
-                    {likedQuizzes.map((quiz) => (
-                        <QuizCard 
-                            quiz={quiz} 
-                            key={quiz.id} 
-                        />
-                    ))}
-                </ul>
-                ) : (
-                    <p>You haven't liked any quizzes yet.</p>
-                )}
-            </div>
+            <Row>
+            {isMobile ? (
+                <Col span={20}>
+                    <Anchor direction="horizontal"
+                        items={[
+                            {
+                                key: 'my-quizzes',
+                                href: '#my-quizzes',
+                                title: 'My Quizzes',
+                            },
+                            {
+                                key: 'liked-quizzes',
+                                href: '#liked-quizzes',
+                                title: 'Liked Quizzes',
+                            },
+                        ]}
+                    />
+                </Col>
+            ) : (
+                <Col span={4}>
+                    <Anchor
+                        items={[
+                            {
+                                key: 'my-quizzes',
+                                href: '#my-quizzes',
+                                title: 'My Quizzes',
+                            },
+                            {
+                                key: 'liked-quizzes',
+                                href: '#liked-quizzes',
+                                title: 'Liked Quizzes',
+                            },
+                        ]}
+                    />
+                </Col>
+                    )}
+                
+                <Col span={20}>
+                    <div id="my-quizzes">
+                        <Divider orientation="left" style={{fontSize: '30px'}}>My Quizzes</Divider>
+                        {my_quizzes.length > 0 ? (
+                        <Space className="quiz-list" size={[4, 4]} wrap>
+                            {my_quizzes.map((quiz) => (
+                                <QuizCard 
+                                    quiz={quiz} 
+                                    key={quiz.id} 
+                                />
+                            ))}
+                        </Space>
+                        ) : (
+                            <p>You don't have any quizzes yet.</p>
+                        )}
+                    </div>
+                    <div id="liked-quizzes">
+                        <Divider orientation="left" style={{fontSize: '30px', marginTop: '70px'}}>Liked Quizzes</Divider>
+                        {likedQuizzes.length > 0 ? (
+                        <ul className="quiz-list">
+                            {likedQuizzes.map((quiz) => (
+                                <QuizCard 
+                                    quiz={quiz} 
+                                    key={quiz.id} 
+                                />
+                            ))}
+                        </ul>
+                        ) : (
+                            <p>You haven't liked any quizzes yet.</p>
+                        )}
+                    </div>
+                </Col>
+            </Row>
         </BaseLayout>
     );
 }

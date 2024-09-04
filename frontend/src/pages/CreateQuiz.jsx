@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import BaseLayout from "../components/BaseLayout";
 import axios from 'axios';
 import { Space, Select, Input} from "antd";
+import '../styles/Form.css'
 
 function CreateQuiz() {
     const [title, setTitle] = useState("");
@@ -50,8 +51,8 @@ function CreateQuiz() {
             alert("Quiz created. Redirecting to create flashcards...");
             setTitle("");
             setDescription("");
-            setField("art");
-            setStatus("public");
+            setField("Art");
+            setStatus("Public");
 
             const quizId = res.data.id;
             navigate(`/create-flashcards/${quizId}`);
@@ -77,41 +78,36 @@ function CreateQuiz() {
             <form onSubmit={createQuiz}>
                 <label htmlFor="title">Title:</label>
                 <br />
-                <Input showCount maxLength={50} onChange={(e) => setTitle(e.target.value)} />   
+                <Input className="form-input" showCount maxLength={50} onChange={(e) => setTitle(e.target.value)} />   
                 <br />
                 <label htmlFor="description">Description:</label>
                 <br />
-                <TextArea showCount maxLength={200} onChange={(e) => setDescription(e.target.value)}
+                <TextArea className="form-input" showCount maxLength={200} onChange={(e) => setDescription(e.target.value)}
                     style={{
                         height: 120,
                         resize: 'none',
                     }}
                 />
                 <br />
-                <Space>
+                <Space direction="vertical" style={{ marginTop: 20, width: '100%'}}>
                     <label htmlFor="field">Field:</label>
-                    <br />
                     <Select
-                            defaultValue="Art"
-                            onChange={(e) => setField(e.target.value)}
-                            style={{
-                                width: 200,
-                            }}
-                            options={fieldOptions}
+                        defaultValue="Art"
+                        onChange={(value) => setField(value)}
+                        style={{ width: '100%' }}
+                        options={fieldOptions}
+                    />
+                    <label htmlFor="status">Status:</label>
+                    <Select
+                        defaultValue="Public"
+                        onChange={(value) => setStatus(value)}
+                        style={{ width: '100%' }}
+                        options={statusOptionsList}
                     />
                 </Space>
                 <br />
                 <Space>
-                    <label htmlFor="status">Status:</label>
-                    <br />
-                    <Select
-                            defaultValue="Public"
-                            onChange={(value) => setStatus(value)}
-                            style={{
-                                width: 200,
-                            }}
-                            options={statusOptionsList}
-                    />
+                    
                 </Space>
                 <br />
                 <input type="submit" value="Submit" />

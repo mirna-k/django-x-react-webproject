@@ -49,3 +49,37 @@ footer {
     bottom: 0;
     width: 100%;
 }
+
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+    background-color: #001529;
+    color: #ffffff;
+    height: 60px;
+}
+
+.header-left,
+.header-right {
+    display: flex;
+    align-items: center;
+}
+
+.header-left {
+    flex: 1;
+}
+
+.header-right {
+    margin-left: auto;
+}
+
+.header-item {
+    color: #ffffff;
+    text-decoration: none;
+    margin: 0 16px;
+}
+
+.header-item:hover {
+    text-decoration: underline;
+}

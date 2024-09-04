@@ -6,8 +6,10 @@ import FlashCard from '../components/FlashCard';
 import LikeButton from '../components/LikeButton';
 import { capitalize } from '../constants';
 import { getAccessToken, refreshToken, fetchUser } from '../services/AuthService';
-import { Button, Progress, Space, Row, Divider, Col, Statistic} from 'antd';
+import useIsMobile from "../services/ResponsiveService";
+import { Button, Progress, Space, Row, Divider, Col, Statistic, Pagination} from 'antd';
 import { LikeOutlined, PlusCircleOutlined } from '@ant-design/icons';
+import '../styles/FlashCard.css';
 
 function QuizDetail() {
     const { id } = useParams();
@@ -17,13 +19,16 @@ function QuizDetail() {
     const [user, setUser] = useState(null);
     const [liked, setLiked] = useState(null);
     const [totalLikes, setTotalLikes] = useState(0);
-    const navigate = useNavigate(); 
+    const [transitionClass, setTransitionClass] = useState('');
 
-      const conicColors = {
+    const navigate = useNavigate(); 
+    const isMobile = useIsMobile(1000); 
+
+    const conicColors = {
         '0%': '#87d068',
         '50%': '#ffe58f',
         '100%': '#ffccc7',
-      };
+    };
 
     useEffect(() => {const fetchData = async () => {
             try {
@@ -48,6 +53,20 @@ function QuizDetail() {
         };
         fetchData();
     }, [id]);
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const flashcardsPerPage = 1;
+
+    const indexOfCurrentFlashcard = (currentPage - 1) * flashcardsPerPage;
+    const currentFlashcard = flashcards[indexOfCurrentFlashcard];
+
+    const handlePageChange = (page) => {
+        setTransitionClass('fade-out');
+        setTimeout(() => {
+            setCurrentPage(page);
+            setTransitionClass('fade-in');
+        }, 400);
+    };
 
     const deleteQuiz = async (id) => {
         let accessToken = getAccessToken();
@@ -97,11 +116,10 @@ function QuizDetail() {
     return (
         <BaseLayout>
             <div>
-
                 <Row>
-                    <Col className="gutter-row" span={12}>
+                    <Col className="gutter-row" span={12} style={{marginLeft: '40px'}}>
+                        <p>{formattedDate}</p>
                         <p>Author: {quiz.author_username}</p>
-                        <p>Quiz created: {formattedDate}</p>
                     </Col>
                     <Col className="gutter-row" span={6}>
                         <Row>
@@ -118,31 +136,72 @@ function QuizDetail() {
                             </>
                         )}
                     </Col>
-                    
                 </Row>
                 <Divider orientation="left" style={{fontSize: '40px'}} >{quiz.title}</Divider>
                 
-                <p style={{fontSize: '20px'}}>{quiz.description}</p>
-                <p>Field: {capitalize(quiz.field)}</p>
-                <p>Status: {capitalize(quiz.status)}</p>
-
-
-                <Link to={`/quiz/${quiz.id}/take`}>
-                    <Button type="primary">Take Quiz</Button>
-                </Link>
+                <div style={{marginLeft: '50px'}}>
+                    <p style={{fontSize: '20px'}}>{quiz.description}</p>
+                    <p>Field: {capitalize(quiz.field)}</p>
+                    <p>Status: {capitalize(quiz.status)}</p>
+                    <Link to={`/quiz/${quiz.id}/take`}>
+                        <Button type="primary">Take Quiz</Button>
+                    </Link>
+                </div>
             </div>
             <Divider orientation="left" style={{fontSize: '30px'}}>Flashcards</Divider>
-            <Row>
-                <Col className="gutter-row" span={12}>
-                    <ul>
-                        {flashcards.map((flashcard) => (
-                            <FlashCard 
-                                flashcard={flashcard} 
-                                key={flashcard.id} 
+            {isMobile ? (
+                <Row>
+                    <Col className="gutter-row" span={24} style={{marginLeft: '10px'}}>
+                        {flashcards.length > 0 && currentFlashcard ? (
+                            <div className={`flashcard-wrapper ${transitionClass}`}>
+                                <FlashCard flashcard={currentFlashcard} key={currentFlashcard.id} />
+                            </div>
+                        ) : (
+                            <p style={{ padding: 20, fontSize: '20px' }}>No flashcards available.</p>
+                        )}
+        
+                        {flashcards.length > 0 && (
+                            <Pagination
+                                current={currentPage}
+                                total={flashcards.length}
+                                pageSize={flashcardsPerPage}
+                                onChange={handlePageChange}
+                                style={{ marginTop: '16px', textAlign: 'center' }}
                             />
-                        ))}
-                    </ul>
-                </Col>
+                        )}
+                    </Col>
+                    <Col className="gutter-row" span={24}>
+                        {isAuthor && (
+                            <>
+                                <Link to={`/create-flashcards/${quiz.id}`}>
+                                    <Button style={{float: 'right'}} type="primary" icon={<PlusCircleOutlined />}>Add Flashcards</Button>
+                                </Link>
+                            </>
+                        )}
+                    </Col>
+                </Row>
+
+            ) : (
+                <Row>
+            <Col className="gutter-row" span={12} style={{marginLeft: '50px'}}>
+                {flashcards.length > 0 && currentFlashcard ? (
+                    <div className={`flashcard-wrapper ${transitionClass}`}>
+                        <FlashCard flashcard={currentFlashcard} key={currentFlashcard.id} />
+                    </div>
+                ) : (
+                    <p style={{ padding: 20, fontSize: '20px' }}>No flashcards available.</p>
+                )}
+  
+                {flashcards.length > 0 && (
+                    <Pagination
+                        current={currentPage}
+                        total={flashcards.length}
+                        pageSize={flashcardsPerPage}
+                        onChange={handlePageChange}
+                        style={{ marginTop: '16px', textAlign: 'center' }}
+                    />
+                )}
+            </Col>
                 <Col className="gutter-row" span={12}>
                     {isAuthor && (
                         <>
@@ -153,33 +212,29 @@ function QuizDetail() {
                     )}
                 </Col>
             </Row>
+            ) }
             
+            <Divider orientation="left" style={{fontSize: '30px'}}>Quiz Results</Divider>
             <div>
-                <Divider orientation="left" style={{fontSize: '30px'}}>Quiz Results</Divider>
                 {results.length > 0 ? (
-                    <ul>
-                    {results.map(result => (
-                        <Space key={result.id}  size="middle" style={{paddingBottom: 20}}>
-                            <p> <strong>{result.taker_username}</strong> </p>
-                            <Progress
-                                percent={result.score}
-                                percentPosition={{
-                                    align: 'start',
-                                    type: 'inner',
-                                }}
-                                size={[500, 20]}
-                                strokeColor={conicColors}
-                            />
-                            <p>Date: {new Date(result.completed_at).toDateString()}</p>
-                        </Space>  
-                    ))}
-                </ul>
-                    
+                    <Space direction="vertical" size="middle" style={{ paddingBottom: 20, width: '100%' }}>
+                        {results.map(result => (
+                            <div key={result.id} style={{ border: '1px solid #ddd', borderRadius: '4px', padding: '10px', width: '100%' }}>
+                                <p><strong>{result.taker_username}</strong></p>
+                                <Progress
+                                    percent={result.score}
+                                    size={[400, 20]}
+                                    strokeColor={conicColors}
+                                    style={{ width: '100%', maxWidth: '500px' }} 
+                                />
+                                <p>Date: {new Date(result.completed_at).toLocaleDateString()}</p>
+                            </div>
+                        ))}
+                    </Space>
                 ) : (
-                    <p>No results yet.</p>
+                    <p style={{ padding: 20, fontSize: '20px' }}>No results yet.</p>
                 )}
             </div>
-             
         </BaseLayout>
     );
 }

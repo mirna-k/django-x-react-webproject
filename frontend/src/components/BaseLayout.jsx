@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Layout, Menu, theme } from 'antd';
-import { DesktopOutlined, FileOutlined, TeamOutlined, UserOutlined, HomeOutlined } from '@ant-design/icons';
+import { Layout, Menu, theme, Button } from 'antd';
+import { HomeOutlined, ProductOutlined } from '@ant-design/icons';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
 import axios from 'axios';
+import GradientButton from './GradientButton';
+import useIsMobile from '../services/ResponsiveService';
 import '../styles/BaseLayout.css';
 
 const useUser = () => {
@@ -40,77 +42,88 @@ function getItem(label, key, icon, children) {
   };
 }
 
-const items = [
-    getItem(<Link to="/">Home</Link>, '1', <HomeOutlined />),
-    getItem(<Link to="/my-quizzes">My Quizzes</Link>, '2', <DesktopOutlined />),
-    getItem('User', 'sub1', <UserOutlined />, [
-      getItem('Tom', '3'),
-      getItem('Bill', '4'),
-      getItem('Alex', '5'),
-    ]),
-    getItem('Team', 'sub2', <TeamOutlined />, [getItem('Team 1', '6'), getItem('Team 2', '8')]),
-    getItem('Files', '9', <FileOutlined />),
-  ];
-
 const BaseLayout = ({children}) => {
-    const [collapsed, setCollapsed] = useState(false);
-    const {
+	const isMobile = useIsMobile(1000); 
+
+	const {
         token: { colorBgContainer, borderRadiusLG },
     } = theme.useToken();
   
-  const user = useUser();
+	const user = useUser();
 
-  const headerItems = [
-    user ? getItem(<span>{user.username}</span>, 'user') : getItem(<Link to="/login">Login</Link>),
-    !user && getItem(<Link to="/register/">Register</Link>),
-    user && getItem(<Link to="/logout">Logout</Link>),
-  ];
+	const headerItems = [
+		getItem(<Link to="/">Home</Link>, '1', <HomeOutlined />),
+		getItem(<Link to="/my-quizzes">My Quizzes</Link>, '2', <ProductOutlined />),
+		getItem(<GradientButton />),
+		user ? getItem(<span>{user.username}</span>, 'user') : getItem(<Link to="/login">Login</Link>),
+		!user && getItem(<Link to="/register/">Register</Link>),
+		user && getItem(<Link to="/logout">Logout</Link>),
+	];
 
-  return (
-    <Layout style={{ height: 100}}>
-        <Header
-            style={{
-                display: 'flex',
-                alignItems: 'center',
-            }}>
-            <div className="demo-logo"><img src="../images/flash-card.png" style={{width: 40, height: 40, marginTop: 30}} alt="Logo"/></div>
-            <Menu
-                theme="dark"
-                mode="horizontal"
-                defaultSelectedKeys={['2']}
-                items={headerItems}
-                style={{
-                    flex: 1,
-                    minWidth: 0,
-                }}
-            />
-        </Header>
-        <Layout>
-            <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
-                <div className="demo-logo-vertical" />
-                <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items} />
-            </Sider>
-            <Layout
-                style={{
-                    padding: '0 24px 24px',
-                }}
-            >
-                <Content
-                    style={{
-                    padding: 24,
-                    margin: 0,
-                    minHeight: 280,
-                    background: colorBgContainer,
-                    borderRadius: borderRadiusLG,
-                    minHeight: 'calc(100vh - 64px - 70px)',
-                    }}
-                >
-                    {children}
-                </Content>
-            </Layout>
-        </Layout>
-    </Layout>
-  );
+	return (
+		<Layout>
+			<Header
+				style={{
+					display: 'flex',
+					alignItems: 'center',
+				}}
+			>
+				<div className="demo-logo"><img src="../images/flash-card.png" style={{width: 40, height: 40, marginTop: 30}} alt="Logo"/></div>
+				{isMobile ? (
+					<Menu
+						theme="dark"
+						mode="horizontal"
+						defaultSelectedKeys={['1']}
+						items={headerItems}
+						style={{
+							flex: 1,
+							minWidth: 0,
+						}}
+					/>
+				) : (<>
+				<div className="header-left">
+					<Link to="/" className="header-item">
+	
+						<Button type="text" icon={<HomeOutlined />} style={{color: 'white'}}>Home</Button>
+					</Link>
+					<Link to="/my-quizzes" className="header-item">
+					<Button type="link" icon={<ProductOutlined />} style={{color: 'white'}}>My Quizzes</Button>
+					</Link>
+				</div>
+				<div className="header-right">
+				<GradientButton className="header-item" />
+					{!user && (
+						<>
+							<Link to="/login" className="header-item">Login</Link>
+							<Link to="/register" className="header-item">Register</Link>
+						</>
+					)}
+					{user && (
+						<>
+							<span className="header-item">{user.username}</span>
+							<Link to="/logout" className="header-item">Logout</Link>
+						</>
+					)}
+				</div>
+				</>
+				)}
+			</Header>
+			<Layout>
+				<Content
+					style={{
+					padding: 24,
+					margin: 0,
+					minHeight: 280,
+					background: colorBgContainer,
+					borderRadius: borderRadiusLG,
+					minHeight: 'calc(100vh - 64px - 70px)',
+					}}
+				>
+					{children}
+				</Content>
+			</Layout>
+		</Layout>
+	);
 };
 
 export default BaseLayout;

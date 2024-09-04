@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@emotion/css": "^11.13.0",
+    "pdfjs-dist": "^4.5.136"
+  }
+}

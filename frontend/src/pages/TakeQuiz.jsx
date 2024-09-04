@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate  } from 'react-router-dom';
 import axios from 'axios';
-import { Button, Input } from 'antd';
+import { Button, Input, Space, List } from 'antd';
 import BaseLayout from '../components/BaseLayout';
+import useIsMobile from "../services/ResponsiveService";
 import { getAccessToken, refreshToken } from '../services/AuthService';
 
 function TakeQuiz() {
@@ -12,7 +13,9 @@ function TakeQuiz() {
     const [userAnswer, setUserAnswer] = useState('');
     const [score, setScore] = useState(0);
     const [quizCompleted, setQuizCompleted] = useState(false);
+    const [answers, setAnswers] = useState([]);
 
+    const isMobile = useIsMobile(1000);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -20,6 +23,7 @@ function TakeQuiz() {
             try {
                 const flashcardsResponse = await axios.get(`/api/quiz/${quizId}/flashcards/`);
                 setFlashcards(flashcardsResponse.data);
+                console.log(flashcardsResponse.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
@@ -28,9 +32,18 @@ function TakeQuiz() {
     }, [quizId]);
 
     const handleSubmitAnswer = () => {
+        const correctAnswer = flashcards[currentIndex].term;
         if (userAnswer.toLowerCase() === flashcards[currentIndex].term.toLowerCase()) {
             setScore(score + 1);
         }
+
+        setAnswers([
+            ...answers, 
+            { 
+                userAnswer, 
+                correctAnswer 
+            }
+        ]);
 
         if (currentIndex < flashcards.length - 1) {
             setCurrentIndex(currentIndex + 1);
@@ -76,24 +89,66 @@ function TakeQuiz() {
     if (quizCompleted) {
         return (
             <BaseLayout>
-            <div>
                 <h2>Quiz Completed!</h2>
-                <p>Your score: {score} / {flashcards.length}</p>
-                <Button type="primary" size={size} onClick={handleSaveResults}>
-                    Save Results
-                </Button>
-                <Button type="primary" danger size={size} onClick={() => navigate(`/quiz/${quizId}/`)}>
-                    Discard Results
-                </Button>
-            </div>
+                <h3>Your score: {score} / {flashcards.length}</h3>
+                {isMobile ? (
+                <List
+                    header={<h3>Results</h3>}
+                    bordered
+                    dataSource={answers}
+                    renderItem={(item, index) => (
+                        <List.Item>
+                            <div style={{ flex: 1, marginBottom: 8 }}>
+                                <strong>Q{index + 1}: </strong>{flashcards[index].description}
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                                <div style={{ flex: 1 }}>
+                                    <strong>Your Answer: </strong>{item.userAnswer}
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                    <strong>Correct Answer: </strong>{item.correctAnswer}
+                                </div>
+                            </div>
+                        </List.Item>
+                    )}
+                />
+                ) : (
+                <List 
+                    header={<h3>Results</h3>}
+                    bordered
+                    dataSource={answers}
+                    renderItem={(item, index) => (
+                        <List.Item>
+                            <div style={{ flex: 0.75 }}>
+                                <strong>Q{index + 1}: </strong>{flashcards[index].description}
+                            </div>
+                            <div style={{ flex: 0.5 }}>
+                                <strong>Your Answer: </strong>{item.userAnswer}
+                            </div>
+                            <div style={{ flex: 0.5 }}>
+                                <strong>Correct Answer: </strong>{item.correctAnswer}
+                            </div>
+                        </List.Item>
+                    )}
+                />)}
+                
+                <Space style={{ marginTop: 20 }}>
+                    <Button type="primary" size={size} onClick={handleSaveResults}>
+                        Save Results
+                    </Button>
+                    <Button type="primary" danger size={size} onClick={() => navigate(`/quiz/${quizId}/`)}>
+                        Discard Results
+                    </Button>
+                </Space>
             </BaseLayout>
         );
     }
 
     return (
         <BaseLayout>
-        <div>
-            <h2>{flashcards[currentIndex]?.description}</h2>
+        <h3>{currentIndex + 1}/{flashcards.length}</h3>
+        <h2>{flashcards[currentIndex]?.description}</h2>
+        <Space>
             <Input 
                 value={userAnswer} 
                 onChange={(e) => setUserAnswer(e.target.value)} 
@@ -102,7 +157,7 @@ function TakeQuiz() {
             <Button type="primary" onClick={handleSubmitAnswer}>
                 Submit
             </Button>
-        </div>
+        </Space>
         </BaseLayout>
     );
 }

@@ -4,16 +4,20 @@
 }
 
 .flashcard {
-    width: 400px;
-    height: 200px;
+    width: 600px;
+    height: 300px;
     display: flex;
     position: relative;
     transform-style: preserve-3d;
     transition: transform 0.6s;
 }
 
-.flashcard-text {
-    font-size: 20px;
+.flashcard-text-front {
+    font-size: 40px;
+}
+
+.flashcard-text-back {
+    font-size: 25px;
 }
 
 .flashcard-container.flipped .flashcard {
@@ -27,7 +31,7 @@
     backface-visibility: hidden;
     text-align: center;
     display: flex;
-    justify-content: center; /* Center horizontally */
+    justify-content: center;
     align-items: center; 
 }
 
@@ -37,4 +41,17 @@
 
 .flashcard-back {
     transform: rotateY(180deg);
+}
+
+.flashcard-wrapper {
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+    opacity: 1;
+}
+
+.flashcard-wrapper.fade-out {
+    opacity: 0;
+}
+
+.flashcard-wrapper.fade-in {
+    opacity: 1;
 }

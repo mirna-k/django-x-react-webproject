@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../api';
 import BaseLayout from '../components/BaseLayout';
-import { Space, Select, Input, Button} from "antd";
+import useIsMobile from "../services/ResponsiveService";
+import { Space, Row, Input, Button, Divider, Col} from "antd";
+import { MinusOutlined    , PlusCircleOutlined } from '@ant-design/icons';
 
 function CreateFlashcards() {
     const { quizId } = useParams();
     const [flashcards, setFlashcards] = useState([{ quiz: quizId, term: '', description: '' }]);
     const [quiz, setQuiz] = useState(null);
+    const isMobile = useIsMobile(1000); 
 
     useEffect(() => {
         api.get(`/api/quiz/${quizId}/`)
@@ -33,6 +36,10 @@ function CreateFlashcards() {
         setFlashcards([...flashcards, { quiz: quizId, term: '', description: '' }]);
     };
 
+    const removeFlashcard = (index) => {
+        setFlashcards(flashcards.filter((_, i) => i !== index));
+    };
+
     const handleSubmit = (e) => {
         e.preventDefault();
         flashcards.forEach((flashcard) => {
@@ -49,27 +56,114 @@ function CreateFlashcards() {
 
     return (
         <BaseLayout>
-            <div>
-                {quiz ? <h1>{quiz.title}</h1> : <p>Loading quiz details...</p>}
-                <h2>Create Flashcards</h2>
-                <form onSubmit={handleSubmit}>
-                    {flashcards.map((flashcard, index) => (
-                        <div key={index}>
-                            <label>Term</label>
-                            <Input name="term" value={flashcard.term} onChange={(e) => handleFlashcardChange(index, e)} /> 
-                            <label>Description</label>
-                            <TextArea name="description" value={flashcard.description} showCount maxLength={200} onChange={(e) => handleFlashcardChange(index, e) }
-                                style={{
-                                    height: 120,
-                                    resize: 'none',
-                                }}
-                            />
-                        </div>
-                    ))}
-                    <Button type="primary" onClick={addFlashcard} size="small">Add Flashcard</Button>
-                    <input type="submit" value="Create Flashcards" />
-                </form>
-            </div>
+            
+                {isMobile ? (
+                    <Row>
+                        <Col span={24}>
+                            {quiz ? <h1>{quiz.title}</h1> : <p>Loading quiz details...</p>}
+                            <h2>Create Flashcards</h2>
+                            <Button type='primary' danger>
+                                <Link to={`/`}>Discard Changes</Link>
+                            </Button>
+                        </Col>
+                        <Col span={24}>
+                            <form onSubmit={handleSubmit}>
+                                {flashcards.map((flashcard, index) => (
+                                    <div key={index}>
+                                        <Row>
+                                            <Col span={12}>
+                                                <h3>{index + 1}.</h3>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Button 
+                                                    type="primary" 
+                                                    danger
+                                                    shape="circle" 
+                                                    size='small'
+                                                    onClick={() => removeFlashcard(index)}  
+                                                    icon={<MinusOutlined />}
+                                                    style={{ marginTop: 20, marginRight: 10, float: 'right'}}
+                                                />
+                                            </Col>
+                                        </Row>
+                                        <label>Term</label>
+                                        <Input name="term" value={flashcard.term} onChange={(e) => handleFlashcardChange(index, e)} /> 
+                                        <label>Description</label>
+                                        <TextArea name="description" value={flashcard.description} showCount maxLength={200} onChange={(e) => handleFlashcardChange(index, e) }
+                                            style={{
+                                                height: 120,
+                                                resize: 'none',
+                                            }}
+                                        />
+                                        <Divider/>
+                                    </div>
+                                ))}
+                                <Space direction="vertical" style={{ display: 'flex' }}>
+                                    <Button 
+                                        shape="circle" 
+                                        onClick={addFlashcard} 
+                                        size="large" 
+                                        icon={<PlusCircleOutlined />}
+                                    />
+                                    <input type="submit" value="Create Flashcards" />
+                                </Space>
+                            </form>
+                        </Col>
+                    </Row>
+                ) : (
+                    <Row>
+                        <Col span={6}>
+                            {quiz ? <h1>{quiz.title}</h1> : <p>Loading quiz details...</p>}
+                            <h2>Create Flashcards</h2>
+                            <Button type='primary' danger>
+                                <Link to={`/`}>Discard Changes</Link>
+                            </Button>
+                        </Col>
+                        <Col span={12}>
+                            <form onSubmit={handleSubmit}>
+                                {flashcards.map((flashcard, index) => (
+                                    <div key={index}>
+                                        <Row>
+                                            <Col span={12}>
+                                                <h3>{index + 1}.</h3>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Button 
+                                                    type="primary" 
+                                                    danger
+                                                    shape="circle" 
+                                                    size='small'
+                                                    onClick={() => removeFlashcard(index)}  
+                                                    icon={<MinusOutlined />}
+                                                    style={{ marginTop: 20, marginRight: 10, float: 'right'}}
+                                                />
+                                            </Col>
+                                        </Row>
+                                        <label>Term</label>
+                                        <Input name="term" value={flashcard.term} onChange={(e) => handleFlashcardChange(index, e)} /> 
+                                        <label>Description</label>
+                                        <TextArea name="description" value={flashcard.description} showCount maxLength={200} onChange={(e) => handleFlashcardChange(index, e) }
+                                            style={{
+                                                height: 120,
+                                                resize: 'none',
+                                            }}
+                                        />
+                                        <Divider/>
+                                    </div>
+                                ))}
+                                <Space direction="vertical" style={{ display: 'flex' }}>
+                                    <Button 
+                                        shape="circle" 
+                                        onClick={addFlashcard} 
+                                        size="large" 
+                                        icon={<PlusCircleOutlined />}
+                                    />
+                                    <input type="submit" value="Create Flashcards" />
+                                </Space>
+                            </form>
+                        </Col>
+                    </Row>
+                )}
         </BaseLayout>
     );
 }
